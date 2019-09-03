@@ -29,15 +29,34 @@
     <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
     
 	<style type="text/css">
+	html {
+		  scroll-behavior: smooth;
+		}
 		#callCountry {width: 100%; margin-top: 15px; color: #f2c029; border: 1px solid #f2c029;}
 		#callCountry:hover {color: #fff; background-color: #f2c029;}
 		#callCountry:focus {box-shadow: none; border-color: #f2c029; outline: 0;}
 	</style>
 </head>
 <body>
-	
-	<div class="time_wrap">
-		
+		<nav class="navbar navbar-expand-md fixed-top navbar-light bg-light rounded">
+	    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExample10" aria-controls="navbarsExample10" aria-expanded="false" aria-label="Toggle navigation">
+	      <span class="navbar-toggler-icon"></span>
+	    </button>
+		<a class="navbar-brand" href="#">
+		    MyTravle
+		  </a>
+	    <div class="collapse navbar-collapse justify-content-md-center" id="navbarsExample10">
+	      <ul class="navbar-nav">
+	        <li class="nav-item">
+	          <a class="nav-link" href="#"><strong>시차 정보</strong></a>
+	        </li>
+	        <li class="nav-item">
+	          <a class="nav-link" href="#whatMoney"><strong>환율 정보</strong></a>
+	        </li>	        
+	      </ul>
+	    </div>
+	  </nav>
+	  <br/><br/>
 		<div class="timezone">
 			<div class="time_data seoul">
 				<span class="seoul"><span><img src="/resources/images/flag/KRW.svg"/></span> Seoul</span><br/>
@@ -68,9 +87,9 @@
 				<div class="times">1시간 시차</div>
 			</div>
 		</div>
-	</div>
+		<br/><br/><br/>
 	<!-- 사이드바 추가(채팅, 관리자채팅) -->
-	<div class="container">
+	<div id="whatMoney" class="container">
 			
 			<!-- 환율 -->
 			

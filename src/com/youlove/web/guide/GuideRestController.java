@@ -27,10 +27,7 @@ public class GuideRestController {
 	@RequestMapping("/json/getTime")
 	public List<Time> getTime() throws Exception {
 		
-		System.out.println("/json/getTime");
-		
 		List<Time> list = TimeZoneId.getTimezone();
-		System.out.println(list);
 		return list;
 	}
 	
