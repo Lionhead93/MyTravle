@@ -1,0 +1,80 @@
+/* RESET */
+html, body, div, span, ul, li, input, button { margin: 0; padding: 0; }
+body { line-height: 1; direction: ltr; }
+h2, h3 { margin: 0; padding: 0; font-size: inherit; font-weight: inherit; }
+ul, li { list-style: none; }
+input, button, select, textarea { background: none; border: 0 none; }
+input[type=button] { background: transparent; outline: 0; cursor: pointer; }
+input[type=radio], input[type=file]
+	{ position: absolute; width: 1px; height: 1px; overflow: hidden; margin: -1px; padding: 0; border: 0; clip: rect(0 0 0 0); }
+select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+input[type=checkbox], select::-ms-expand { display: none; }
+select:active { box-shadow: 0; }
+input[type=text]:focus, button:active, select:focus { outline: none; }
+a { color: inherit; text-decoration: none; cursor: pointer; }
+a:link, a:active, a:hover { text-decoration: none; }
+
+
+/* COMMON */
+.wrap { position: relative; max-width: 1200px; margin: auto; padding-top: 50px; padding-bottom: 200px; }
+.skip { position: absolute; width: 1px; height: 1px; overflow: hidden; margin: -1px; padding: 0; border: 0; clip: rect(0 0 0 0); }
+.clear::after { content: ''; display: block; clear: both; }
+
+
+/* TIMEZONE */
+header { background-color: #fff; }
+.time_wrap { height: 100%; }
+.timezone { background-color: #a3daff; font-family: 'Montserrat', sans-serif; position: relative; max-width: 1100px; height: 600px; margin: auto; margin-top: 30px; border-radius: 12em; background-image: url(/resources/images/main/europe_map.png); background-position: center center; background-size: auto 100%; background-repeat: no-repeat; }
+.time_data { position: absolute; font-weight: 700; font-size: 18px; line-height: 30px; text-align: center; }
+.time_data.seoul { /* 서울 */ top: 155px; right: 150px; }
+.time_data.paris { /* 프랑스 */ top: 150px; left: 530px; }
+.time_data.london { /* 영국 */ top: 85px; left: 420px; }
+.time_data.mockba { /* 러시아 */ top: 90px; right: 370px; }
+.time_data.newyork { /* 미국 */ top: 200px; left: 250px; }
+.time_data.paulo { /* 브라질 */ bottom: 130px; left: 320px; }
+.time_data.sydney { /* 호주 */ top: 420px; right: 125px; }
+.time_data > span, .time_data > div { display: inline-block; }
+.time_data .times { width: 95px; font-size: 20px; border: 1px solid #cbcbcb; background-color: #f0f0f0; border-radius: 4px; padding: 2px 0; vertical-align: middle; }
+.time_data img { margin: 0; padding: 0; width: auto; height: 18px;}
+
+
+/* LIST */
+.wallet_title { margin-bottom: 30px; padding: 60px 0 30px 0; font-size: 25px; font-weight: 700; border-bottom: 2px solid #cbcbcb; }
+.wallet_title span { margin-left: 30px; }
+.wallet_box { width: 99%; margin: auto; }
+.wallet_box:not(first-child) { margin-top: 20px; }
+.wallet_box > h3 { height: 45px; margin-left: 15px; font-size: 20px; font-weight: 700; line-height: 45px; }
+.square_wrap { width: 100%; }
+.square { float: left; width: 25%; min-width: 275px; }
+.square > div
+	{ width: 95%; margin: auto; text-align: center; background-size: cover; background-position: center center; background-repeat: no-repeat;
+	  border-radius: 2.2em; box-sizing: border-box; }
+.square > div:hover { background-size: 200% 200%; }
+.square > div > div
+	{ width: 100%; height: 100%; padding: 45px 18px; background-color: rgba(255, 255, 255, 0.2);
+	  border: 1px solid #cbcbcb; border-radius: 2.2em; box-sizing: border-box; }
+.square > div > div:hover { background-color: rgba(255, 255, 255, 0.7); }
+.square > div > div:hover .text_shadow { text-shadow: none; }
+.square .text_shadow { text-shadow: 5px 0 4px #fff, -5px 0 4px #fff }
+.plan_name { font-size: 18px; font-weight: 700; }
+.plan_period { margin-top: 60px; font-size: 15px; }
+.plan_budget { height: 50px; font-size: 14px; }
+.plan_budget div { display: inline-block; margin-top: 30px; padding: 8px 15px; background-color: rgba(255, 255, 255, .3); border: 1px solid #282c37; border-radius: 1em; }
+.plan_budget span { margin-left: 15px; }
+.wallet_is { margin-top: 10px; margin-bottom: -10px; }
+.wallet_is .btn-secondary { color: #cbcbcb; background-color: #fff; border-color: #282c37; }
+.wallet_is .btn-secondary:last-child { margin-left: -2px; }
+.btn-secondary:not(:disabled):not(.disabled).active	{ color: #282c37; background-color: #f2c029; }
+.wallet_is .btn-secondary:not(:disabled):not(.disabled).active:focus { box-shadow: inset 0 0 black; }
+.wallet_is .btn-group-toggle .txt { font-size: 13px; font-weight: 700; }
+
+.comm .square { width: 33.33%; margin-top: 20px; }
+.comm .wallet_title { margin-bottom: 10px; padding: 150px 0 30px 0; }
+.comm .square > div, .comm .square > div > div { border-radius: .24em; }
+.comm .square > div { height: 350px; }
+.comm .square > div > div { position: relative; padding-top: 100px; }
+.comm .square > div > div:hover { background-color: transparent; }
+.comm .square .white { position: absolute; left: 0; bottom: 0; width: 100%; height: 150px; margin-left: 0px; padding: 20px; text-align: left; background-color: #fff; border-bottom-left-radius: .23em; border-bottom-right-radius: .23em; }
+.comm .plan_name { position: absolute; top: 20px; width: 85%; }
+.comm .plan_period { margin-top: 70px; }
+.comm .plan_budget { height: 30px; }

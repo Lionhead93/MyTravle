@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="HashtagMapper">
+ 	
+	<resultMap id="hashtagMap" type="hashtag">
+		<result property="hashtagCode" 		column="hashtag_code" 	 	jdbcType="NUMERIC"/>
+		<result property="hashtag"			column="hashtag" 		jdbcType="VARCHAR" />
+		<result property="communityCode" 	column="community_code" 		jdbcType="INTEGER" />
+		<result property="partyCode" 		column="party_code" 		jdbcType="INTEGER" />
+		<result property="writer.userCode" 			column="user_code" 		jdbcType="NUMERIC" />
+	</resultMap>
+	
+	<insert id="addHashtag" parameterType="hashtag">
+		<selectKey keyProperty="hashtagCode" resultType="int" order="BEFORE">
+		     SELECT MAX(hashtag_code)+1 FROM hashtag
+		</selectKey>
+		INSERT 
+		INTO hashtag(hashtag_code, hashtag, community_code, party_code, user_code) 
+		VALUES (seq_hashtag_code.nextval,#{hashtag:VARCHAR},#{communityCode:INTEGER},#{partyCode:INTEGER},#{writer.userCode})
+	</insert>
+	 
+	<select 	id="getHashtag"		parameterType="hashtag"		resultMap="hashtagMap">
+		SELECT
+		hashtag_code, hashtag, community_code, party_code, user_code
+		FROM hashtag
+		<if test="communityCode != 0">
+			<where>
+				community_code = #{communityCode}
+			</where>
+		</if>
+		<if test="partyCode != 0">
+			<where>
+				party_code = #{partyCode}
+			</where>
+		</if>
+	
+	</select>
+	 
+	<update		id="updateHashtag"	parameterType="hashtag" >
+		UPDATE hashtag
+		<set>
+			hashtag	= #{hashtag:VARCHAR}
+		</set>
+		WHERE 
+		<if test="communityCode != 0">
+			community_code	= #{communityCode:INTEGER}
+		</if>
+		<if test="partyCode != 0">
+			party_code		= #{partyCode:INTEGER}
+		</if>
+	</update>
+	<update id="updateCode" parameterType="map">
+		UPDATE hashtag
+		<set>
+			<if test="communityCode != null">
+				community_code	= #{communityCode}
+			</if>
+			<if test="partyCode != null">
+				party_code		= #{partyCode}
+			</if>
+		</set>
+		WHERE hashtag_code = #{hashtagCode}
+	</update> 
+	<delete 	id="deleteHashtag" 	parameterType="int">
+		DELETE
+		FROM hashtag
+		WHERE hashtag_code = #{hashtagCode}
+	</delete>
+	
+</mapper>
+

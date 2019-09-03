@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="TimelineMapper">
+ 	
+ 	<resultMap id="timelineMap" type="timeline">
+		<result property="timelineCode" 			column="TIMELINE_CODE" 			jdbcType="NUMERIC"/>
+		<result property="timeDate"					column="TIME_DATE" 				jdbcType="VARCHAR" />
+		<result property="protocol" 				column="PROTOCOL" 				jdbcType="CHAR" />
+		<result property="commentCode" 				column="COMMENT_CODE" 			jdbcType="NUMERIC" />
+		<result property="inviteCode" 				column="INVITE_CODE" 				jdbcType="CHAR" />
+		<result property="boardCode" 				column="BOARD_CODE" 				jdbcType="NUMERIC" />
+		<result property="detailCode" 				column="DETAIL_CODE" 				jdbcType="NUMERIC" />
+		<association property="fromUser" 	javaType="user">
+			<result property="userCode" 	column="USER_CODE" />
+			<result property="nickname"		column="NICKNAME" />
+			<result property="profileImg" 	column="PROFILE_IMG" />
+		</association>
+		<association property="toUser" 		javaType="user">
+			<result property="userCode" 	column="to_code" />
+			<result property="nickname" 	column="to_nick" />
+			<result property="profileImg" 	column="to_img" />
+		</association>
+	</resultMap>
+	
+	<insert id="addTimeline" parameterType="timeline">
+	INSERT INTO TIMELINE
+	<if test="protocol == 9 or protocol == 8">
+	(timeline_code,from_user,to_user,protocol,invite_code,time_date,comment_code)
+	</if>
+	<if test="protocol == 1 or protocol == 3">
+	(timeline_code,from_user,to_user,protocol,invite_code,time_date,board_code,detail_code)
+	</if>
+	<if test="protocol == 2 or protocol == 4">
+	(timeline_code,from_user,to_user,protocol,invite_code,time_date)
+	</if>
+	
+	
+	VALUES
+	<if test="protocol == 9 or protocol == 8">
+	(seq_timeline_code.nextval,#{fromUser.userCode},(select writer_comment from comments where comment_code = #{commentCode}),#{protocol},'0',#{timeDate},#{commentCode})
+	</if>
+	<if test="protocol == 1 or protocol == 3">
+	(seq_timeline_code.nextval,#{fromUser.userCode},#{toUser.userCode},#{protocol},'0',#{timeDate},#{boardCode},#{detailCode})
+	</if>
+	<if test="protocol == 2 or protocol == 4">
+	(seq_timeline_code.nextval,#{fromUser.userCode},#{toUser.userCode},#{protocol},'0',#{timeDate})
+	</if>
+	</insert>
+	
+	
+	<select id="getTimelineList" parameterType="user"  resultMap="timelineMap">
+		select t1.*,u1.nickname to_nick,u1.user_code to_code, u1.profile_img to_img 
+		from ( select * from (
+						select * from timeline
+						where to_user = #{userCode} or from_user = #{userCode} ) t , users u 
+				where t.from_user = u.user_code) t1,users u1
+		where t1.to_user = u1.user_code
+		order by time_date desc
+	</select>
+	 
+	<update id="updateTimeline" parameterType="timeline">
+	UPDATE TIMELINE
+	<set>
+		INVITE_CODE = #{inviteCode}
+	</set>
+	WHERE TIMELINE_CODE = #{timelineCode}
+	
+	</update>
+	 
+	 
+</mapper>

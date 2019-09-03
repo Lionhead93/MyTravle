@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="PartyMapper">
+ 	
+ 	
+	<resultMap id="partyMap" type="party">
+		<result property="partyCode" 		column="party_code" 		jdbcType="NUMERIC"/>
+		<result property="partyTitle"		column="party_title" 		jdbcType="VARCHAR" />
+		<result property="partyContent" 	column="party_content" 		jdbcType="VARCHAR" />
+		<result property="partyStart" 		column="party_start" 			jdbcType="VARCHAR" />
+		<result property="partyEnd" 		column="party_end" 			jdbcType="VARCHAR" />
+		<result property="latitude" 		column="latitude" 	jdbcType="NUMERIC" />
+		<result property="longitude" 		column="longitude" 			jdbcType="NUMERIC" />
+		<result property="partyPeople" 		column="party_people" 			jdbcType="VARCHAR"  />
+		<result property="partyRecruitment"	column="party_recruitment" 		jdbcType="CHAR" />
+		<result property="gender"			column="gender" 		jdbcType="CHAR" />
+		<result property="age"				column="age" 		jdbcType="NUMERIC" />
+		<result property="regDate"			column="reg_date" 		jdbcType="DATE" />
+		<association property="partyWriter" javaType="user" >
+			<result property="userCode" 	column="USER_CODE" />
+			<result property="nickname" 	column="NICKNAME" />
+			<result property="profileImg"	column="PROFILE_IMG" />
+			<result property="gender"		column="me" />
+			<result property="birth"		column="BIRTH" />
+		</association>
+		<association property="city" javaType="city" >
+			<result property="cityName" 	column="CITY_NAME" 	 />
+			<result property="countryName" 	column="COUNTRY_NAME"/>
+			<result property="flagImage" 	column="FLAG_IMAGE"/>
+		</association>
+		<association property="partyHashtagCode" javaType="hashtag">
+			<result property="hashtag" column="hashtag"/>
+		</association>
+	</resultMap>
+	
+	<!-- SQL : INSERT -->
+	<insert 	id="addParty"	parameterType="party" >
+		<selectKey keyProperty="partyCode" resultType="int" order="BEFORE">
+		     SELECT MAX(party_code)+1 FROM party
+		</selectKey>
+		 	INSERT
+		 	INTO party (party_code,
+		 				party_title,
+		 				party_content,
+		 				party_start,
+		 				party_end,
+		 				latitude,
+		 				longitude,
+		 				party_people,
+		 				writer,
+		 				party_recruitment,
+		 				gender,
+		 				age,
+		 				city_name,
+		 				hashtag_code,
+		 				reg_date)
+		 	VALUES (seq_party_code.nextval,
+		 				#{partyTitle},
+		 				#{partyContent},
+		 				to_date(#{partyStart},'yyyy-mm-dd'),
+		 				to_date(#{partyEnd},'yyyy-mm-dd'),
+		 				#{latitude},
+		 				#{longitude},
+		 				#{partyPeople:VARCHAR},
+		 				#{partyWriter.userCode},
+		 				#{partyRecruitment},
+		 				#{gender},
+		 				#{age},
+		 				#{city.cityName},
+		 				#{partyHashtagCode.hashtagCode:INTEGER},
+		 				sysdate)
+	</insert>
+	
+	<select id="getParty" parameterType="int" resultMap="partyMap">
+		SELECT
+		p.party_code, p.party_title, p.party_content,
+		p.party_start, p.party_end, p.latitude,
+		p.longitude, p.party_people, p.writer,
+		p.party_recruitment, p.gender, p.age,
+		p.hashtag_code, p.reg_date,
+		u.nickname, u.profile_img, u.gender AS me, u.birth,
+		c.city_name, c.country_name, c.flag_Image
+		FROM
+		party p, users u, city c
+		WHERE
+		party_code = #{partyCode} AND u.user_code = p.writer AND c.city_name = p.city_name
+	</select>
+	
+	<select id="getPartyList" parameterType="map" resultMap="partyMap">
+		SELECT *
+		FROM ( SELECT first_table.* , ROWNUM AS row_seq
+		            FROM (SELECT    p.party_code,
+		                                    p.party_title,
+		                                    p.party_content,
+		                                    p.party_start,
+		                                    p.party_end,
+		                                    p.latitude,
+		                                    p.longitude,
+		                                    p.party_people,
+		                                    p.party_recruitment,
+		                                    p.gender,
+		                                    p.age,
+		                                    p.hashtag_code,
+		                                    p.reg_date,
+		                                    u.user_code,
+		                                    u.nickname,
+		                                    u.gender AS me,
+		                                    u.birth,
+		                                    u.profile_img,
+		                                    c.city_name,
+		                                    c.country_name,
+		                                    c.flag_image,
+		                                    h.hashtag
+		                        FROM party p, users u, city c, hashtag h
+		                        <where>
+			                        p.writer = u.user_code AND p.city_name = c.city_name AND p.party_code = h.party_code 
+			                        <if test="searchKeyword != '' ">
+			                        	AND p.party_title LIKE &apos;%${searchKeyword}%&apos;
+			                        </if>
+		                        </where>
+		                        ORDER BY p.party_code DESC ) first_table
+		             )
+	</select>
+	
+	<select  id="getTotalCount"  parameterType="search" resultType="int">
+		SELECT COUNT(*)
+		FROM party
+	</select>
+	
+	<update id="updateParty" parameterType="party">
+		UPDATE party
+		<set>
+			party_title = #{partyTitle},
+			party_content = #{partyContent},
+			party_start = to_date(#{partyStart},'yyyy-mm-dd'),
+			party_end = to_date(#{partyEnd},'yyyy-mm-dd'),
+			latitude = #{latitude},
+			longitude = #{longitude},
+			party_people = #{partyPeople:VARCHAR},
+			party_recruitment = #{partyRecruitment},
+			gender = #{gender},
+			age = #{age},
+			city_name = #{city.cityName},		
+			hashtag_code = #{partyHashtagCode.hashtagCode:INTEGER}
+		</set>
+		WHERE party_code = #{partyCode}
+	</update>
+	
+	<delete id="deleteParty" parameterType="int">
+		DELETE
+		FROM party
+		WHERE party_code = #{partyCode}
+	</delete>
+	
+	
+</mapper>
+

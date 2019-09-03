@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="WalletMapper">
+
+	<resultMap id="walletSelectMap" type="wallet">
+		<result property="walletDetailCode"	column="W_DETAIL_CODE"	jdbcType="NUMERIC" />
+		<result property="walletCode"		column="W_CODE"			jdbcType="NUMERIC" />
+		<result property="part"				column="PART"			jdbcType="CHAR" />
+		<result property="moneyUnit"		column="MONEY_UNIT"		jdbcType="VARCHAR" />
+		<result property="expression"		column="EXPRESSION"		jdbcType="VARCHAR" />
+		<result property="price"			column="PRICE"			jdbcType="NUMERIC" />
+		<result property="krwPrice"			column="KRW_PRICE"		jdbcType="NUMERIC" />
+		<result property="regDate"			column="REG_DATE"		jdbcType="VARCHAR" />
+		<result property="regTime"			column="REG_TIME"		jdbcType="VARCHAR" />
+		<result property="item"				column="ITEM"			jdbcType="VARCHAR" />
+		<result property="content"			column="CONTENT"		jdbcType="VARCHAR" />
+		<result property="payOption"		column="PAY_OPTION"		jdbcType="CHAR" />
+		<result property="exchangeRate"		column="EXCHANGE_RATE"	jdbcType="NUMERIC" />
+		<result property="category"			column="CATEGORY"		jdbcType="CHAR" />
+		<result property="walletImage"		column="W_IMAGE"		jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<!-- walletListView.jsp -->
+	<select id="isWallet" parameterType="int" resultType="int">
+		SELECT NVL(COUNT(*), 0)
+		FROM wallet
+		WHERE planner_code = #{value}
+	</select>
+	
+	<select id="getWalletCode" parameterType="int" resultType="int">
+		SELECT w_code
+		FROM wallet
+		WHERE planner_code = #{value}
+	</select>
+	
+	<select id="getPlannerCode" parameterType="int" resultType="int">
+		SELECT planner_code
+		FROM wallet
+		WHERE w_code = #{value}
+	</select>
+	
+	<insert id="addWalletView" parameterType="int">
+		INSERT
+		INTO wallet ( w_code, planner_code )
+		VALUES ( seq_w_code.nextval, #{value} )
+	</insert>
+	
+	<update	id="deleteWalletView" parameterType="int">
+	  	DELETE
+		FROM wallet
+	  	WHERE w_code = #{value}
+	</update>
+	
+	<!-- walletList.jsp -->
+	<insert id="addWallet" parameterType="wallet">
+		INSERT
+		INTO wallet_detail ( w_detail_code, w_code, part, money_unit, expression, price, krw_price,
+							 reg_date, reg_time, item, content, pay_option, exchange_rate, category, w_image )
+		VALUES ( seq_w_detail_code.nextval, #{walletCode}, #{part}, #{moneyUnit}, #{expression},
+				 #{price}, #{krwPrice}, #{regDate}, #{regTime}, #{item:VARCHAR}, #{content:VARCHAR}, #{payOption},
+				 #{exchangeRate:NUMERIC}, #{category}, #{walletImage:VARCHAR} )
+	</insert>
+	
+	<select id="getWallet" parameterType="int" resultMap="walletSelectMap">
+		SELECT w_detail_code, w_code, part, money_unit, expression, price, krw_price,
+			   reg_date, reg_time, item, content, pay_option, exchange_rate, category, w_image
+		FROM wallet_detail
+		WHERE w_detail_code = #{value}
+	</select>
+	
+	<update	id="updateWallet" parameterType="wallet">
+	  	UPDATE wallet_detail
+		<set>
+			money_unit = #{moneyUnit},
+			expression = #{expression},
+			price = #{price},
+			krw_price = #{krwPrice},
+			reg_date = #{regDate},
+			reg_time = #{regTime},
+			item = #{item:VARCHAR},
+			content = #{content:VARCHAR},
+			pay_option = #{payOption},
+			exchange_rate = #{exchangeRate:NUMERIC},
+			category = #{category},
+			w_image = #{walletImage:VARCHAR}
+		</set>
+	  	WHERE w_detail_code = #{walletDetailCode}
+	</update>
+	
+	<update	id="deleteWallet" parameterType="int">
+	  	UPDATE wallet_detail
+		<set>
+			category = 9
+		</set>
+	  	WHERE w_detail_code = #{value}
+	</update>
+	
+	<select id="getWalletList" parameterType="map" resultMap="walletSelectMap">
+		SELECT *
+		FROM ( SELECT inner_table.*, ROWNUM AS row_seq
+			   FROM ( SELECT *
+					  FROM wallet_detail
+					  WHERE w_code = #{walletCode}
+							AND category <![CDATA[ < ]]> '9'
+							<if test="search.searchKeyword != null and search.searchKeyword != ''">
+								AND reg_date IN ( #{search.searchKeyword} )
+							</if>
+					  ORDER BY reg_date DESC, reg_time DESC, w_detail_code DESC ) inner_table
+			   WHERE ROWNUM <![CDATA[ < ]]>= #{search.endRowNum} )
+		WHERE row_seq BETWEEN #{search.startRowNum} AND #{search.endRowNum}
+	</select>
+	
+	<select id="getTotalCount" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM ( SELECT *
+			   FROM wallet_detail
+			   WHERE w_code = #{walletCode}
+					 AND category <![CDATA[ < ]]> '9'
+					 <if test="search.searchKeyword != null and search.searchKeyword != ''">
+						AND reg_date IN ( #{search.searchKeyword} )
+					 </if>
+			   ORDER BY reg_date DESC, reg_time DESC, w_detail_code DESC ) countTable
+	</select>
+	
+	<select id="getRegDate" parameterType="int" resultMap="walletSelectMap">
+		SELECT reg_date
+		FROM wallet_detail
+		WHERE w_code = #{value}
+			  AND category <![CDATA[ < ]]> '9'
+		GROUP BY reg_date
+		ORDER BY reg_date
+	</select>
+	
+	<select id="totalComes" parameterType="wallet" resultType="double">
+		SELECT NVL(wd.krw_price, 0)
+		FROM wallet w, ( SELECT SUM(krw_price) krw_price, w_code
+						 FROM wallet_detail
+						 WHERE part = #{part}
+							   AND category <![CDATA[ < ]]> '9'
+						 GROUP BY w_code ) wd
+		WHERE w.w_code = wd.w_code(+)
+			  AND w.w_code = #{walletCode}
+	</select>
+	
+	<select id="totalChart" parameterType="int" resultMap="walletSelectMap">
+		SELECT SUM(krw_price) krw_price, category
+		FROM wallet_detail
+		WHERE w_code = #{value}
+			  AND part = 1
+			  AND category <![CDATA[ < ]]> '9'
+		GROUP BY category
+	</select>
+	
+</mapper>

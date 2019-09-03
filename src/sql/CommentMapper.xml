@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CommentMapper">
+ 	
+ 	
+	<resultMap id="commentMap" type="comment">
+		<result property="commentCode" 				column="COMMENT_CODE" 				jdbcType="NUMERIC"/>
+		<result property="boardCode"				column="BOARD_CODE" 				jdbcType="NUMERIC" />
+		<result property="detailCode" 				column="DETAIL_CODE" 				jdbcType="VARCHAR" />
+		<result property="commentContent" 			column="COMMENT_CONTENT" 			jdbcType="VARCHAR" />
+		<result property="step" 					column="STEP" 						jdbcType="NUMERIC" />
+		<result property="replyCode" 				column="REPLY_CODE" 				jdbcType="NUMERIC" />
+		<result property="commentDate" 				column="COMMENT_DATE" 				jdbcType="VARCHAR" />
+		<result property="commentDelete" 			column="COMMENT_DELETE" 		jdbcType="VARCHAR" />
+		<result property="likeCount" 			column="CT" 		jdbcType="NUMERIC" />
+		<association property="writerComment" javaType="user">
+			<result property="userCode" column="USER_CODE" />
+			<result property="nickname" column="NICKNAME" />
+			<result property="profileImg" column="PROFILE_IMG" />
+		</association>
+		
+	</resultMap>
+	
+	<!-- SQL : INSERT -->
+	<insert 	id="addComment"		parameterType="comment" >
+		insert into comments(COMMENT_CODE , BOARD_CODE, DETAIL_CODE, COMMENT_CONTENT, STEP, REPLY_CODE, COMMENT_DATE, WRITER_COMMENT, COMMENT_DELETE ) 
+		values (seq_comment_code.nextval,#{boardCode},#{detailCode},#{commentContent},
+		<if test="replyCode != 0">
+			(SELECT max(step)+1 from comments where comment_code=#{replyCode} or reply_code = #{replyCode}),#{replyCode:NUMERIC}
+		</if>
+		<if test="replyCode == 0">
+			0,seq_comment_code.currVal
+		</if>
+		,#{commentDate}, #{writerComment.userCode},0)			
+	 </insert>
+	 
+	 <update id="updateComment" parameterType="comment">
+	 	UPDATE comments set COMMENT_CONTENT=#{commentContent}, COMMENT_DATE=#{commentDate}
+	 	WHERE COMMENT_CODE = #{commentCode}
+	 </update>
+	 
+	 <update id="deleteComment" parameterType="comment">
+	 	UPDATE comments set COMMENT_CONTENT='삭제된 댓글입니다.', COMMENT_DELETE = 1
+	 	WHERE COMMENT_CODE = #{commentCode}
+	 </update>
+	 
+	 <select id="getComment" parameterType="map" resultMap="commentMap">
+		select ctt.ct, c.*,u.user_code,u.profile_img,u.nickname   from  users u, comments c ,( 
+		    select c.comment_code cttt , count(l.comment_code) ct
+		    from likes l , (select * from (
+		    select ROWNUM ronum ,innerT.* 
+		    from (
+		        select * from comments where BOARD_CODE = #{boardCode} and DETAIL_CODE =  #{detailCode}  order by reply_code desc, step) innerT
+            where ROWNUM &lt;= #{search.endRowNum} )
+		where ronum BETWEEN #{search.startRowNum} AND #{search.endRowNum}) c
+		    where l.comment_code(+) = c.comment_code
+		    group by  c.comment_code) ctt
+		where ctt.cttt = c.comment_code and c.writer_comment = u.user_code
+		order by reply_code desc, step	
+	 </select>
+	 
+	 <select id="countComment" parameterType="comment" resultType="int">
+	 	SELECT count(*) 
+	    FROM comments 
+	    WHERE BOARD_CODE = #{boardCode} and DETAIL_CODE = #{detailCode}
+	 </select>
+	 
+	 <select id="getCommentOne" parameterType="comment" resultMap="commentMap">
+	 	SELECT *
+	    FROM comments 
+	    WHERE COMMENT_CODE = #{commentCode}
+	 </select>
+	
+	
+	 
+</mapper>

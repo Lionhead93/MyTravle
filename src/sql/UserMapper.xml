@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper">
+ 	
+ 	
+	<resultMap id="userSelectMap" type="user">
+		<result property="userCode" 			column="USER_CODE" 			jdbcType="NUMERIC"/>
+		<result property="token"				column="TOKEN" 				jdbcType="VARCHAR" />
+		<result property="profileAuth" 			column="PROFILE_AUTH" 		jdbcType="CHAR" />
+		<result property="role" 				column="ROLE" 				jdbcType="VARCHAR" />
+		<result property="nickname" 			column="NICKNAME" 			jdbcType="VARCHAR" />
+		<result property="email" 				column="EMAIL" 				jdbcType="VARCHAR" />
+		<result property="phone" 				column="PHONE" 				jdbcType="VARCHAR" />
+		<result property="name" 				column="NAME" 				jdbcType="VARCHAR"  />
+		<result property="password" 			column="PASSWORD" 			jdbcType="VARCHAR" />
+		<result property="birth" 				column="BIRTH" 				jdbcType="DATE" />
+		<result property="gender" 				column="GENDER" 			jdbcType="CHAR" />
+		<result property="profileImg" 			column="PROFILE_IMG" 		jdbcType="VARCHAR" />
+		<result property="introduce" 			column="INTRODUCE" 			jdbcType="VARCHAR" />
+		<result property="regDate" 				column="REG_DATE" 			jdbcType="DATE" />
+		<result property="startBlock" 			column="START_BLOCK" 		jdbcType="VARCHAR" />
+		<result property="endBlock" 			column="END_BLOCK" 			jdbcType="VARCHAR" />
+		<result property="sessionNo" 			column="SESSION_NO" 			jdbcType="VARCHAR" />
+	</resultMap>
+	
+	
+	<resultMap id="payMap" type="pay">
+		<result property="paymentCode" 				column="PAYMENT_CODE" 				jdbcType="NUMERIC"/>
+		<result property="paymentDate"				column="PAYMENT_DATE" 				jdbcType="DATE" />
+		<result property="paymentPrice" 			column="PAYMENT_PRICE" 				jdbcType="VARCHAR" />
+		<result property="paymentOption" 			column="PAYMENT_OPTION" 			jdbcType="VARCHAR" />
+		<result property="hotelName" 				column="HOTEL_NAME" 				jdbcType="VARCHAR" />
+		<result property="hotelAddress" 			column="HOTEL_ADDRESS" 				jdbcType="VARCHAR" />
+		<result property="hotelImage" 				column="HOTEL_IMAGE" 				jdbcType="VARCHAR" />
+		<result property="hotelCode" 				column="HOTEL_CODE" 				jdbcType="VARCHAR"  />
+		<result property="startDate" 				column="START_DATE" 				jdbcType="VARCHAR" />
+		<result property="endDate" 					column="END_DATE" 					jdbcType="VARCHAR" />
+		<result property="startWay" 				column="START_WAY" 					jdbcType="VARCHAR" />
+		<result property="endWay" 					column="END_WAY" 					jdbcType="VARCHAR" />
+		<result property="flightTime" 				column="FLIGHT_TIME" 				jdbcType="VARCHAR" />
+		<result property="returnStartWay" 			column="RETURN_START_WAY" 			jdbcType="VARCHAR" />
+		<result property="returnEndWay" 			column="RETURN_END_WAY" 			jdbcType="VARCHAR" />
+		<result property="returnFlightTime" 		column="RETURN_FLIGHT_TIME" 		jdbcType="VARCHAR" />
+		<association property="paymentUser" javaType="user">
+			<result property="userCode" column="USER_CODE" />
+			<result property="nickname" column="NICKNAME" />
+		</association>
+	</resultMap>
+	
+	
+	<resultMap id="friendMap" type="friend">
+		<result property="friendNo" 			column="FRIEND_NO" 			jdbcType="NUMERIC"/>
+		<result property="memo"					column="MEMO" 				jdbcType="VARCHAR" />
+		<result property="userCode" 				column="USER_CODE" 				jdbcType="NUMERIC" />
+		<result property="friendRole" 				column="FRIEND_ROLE" 				jdbcType="CHAR" />
+		<association property="friendCode" 		javaType="user">
+			<result property="userCode" 	column="to_code" />
+			<result property="nickname" 	column="to_nick" />
+			<result property="profileImg" 	column="to_img" />
+		</association>
+	</resultMap>
+	
+	
+	<resultMap id="policeMap" type="police">
+		<result property="policeCode" 					column="POLICE_CODE" 					jdbcType="NUMERIC"/>
+		<result property="policeBoardCode"				column="POLICE_BOARDCODE" 				jdbcType="NUMERIC" />
+		<result property="policeDetailCode" 			column="POLICE_DETAILCODE" 				jdbcType="NUMERIC" />
+		<result property="policeOption" 				column="POLICE_OPTION" 					jdbcType="VARCHAR" />
+		<result property="policeContent" 				column="POLICE_CONTENT" 				jdbcType="VARCHAR" />
+		<result property="policeDate" 					column="POLICE_DATE" 					jdbcType="VARCHAR" />
+		<result property="processing" 					column="PROCESSING" 					jdbcType="CHAR" />
+		<result property="commentCode" 					column="COMMENT_CODE" 					jdbcType="NUMERIC"/>
+		<association property="fromUser" 	javaType="user">
+			<result property="userCode" 	column="USER_CODE" />
+			<result property="nickname"		column="NICKNAME" />
+			<result property="role" 	column="role" />
+		</association>
+		<association property="toUser" 		javaType="user">
+			<result property="userCode" 	column="to_code" />
+			<result property="nickname" 	column="to_nick" />
+			<result property="role" 	column="to_role" />
+		</association>
+	</resultMap>
+	
+	<!-- SQL : INSERT -->
+	<insert 	id="addUser"		parameterType="user" >
+	 	INSERT
+		INTO users( USER_CODE , TOKEN , PROFILE_AUTH , ROLE , NICKNAME, EMAIL, PHONE, NAME , PASSWORD,BIRTH,GENDER,PROFILE_IMG,INTRODUCE,REG_DATE,START_BLOCK,END_BLOCK) 
+		VALUES	 (	seq_user_code.nextval , #{token:VARCHAR} , #{profileAuth} , 'user' , #{nickname} , 
+					#{email} , #{phone} , #{name} ,#{password},#{birth},#{gender},#{profileImg:VARCHAR},#{introduce:VARCHAR}, SYSDATE,#{startBlock:VARCHAR},#{endBlock:VARCHAR} )
+	 </insert>
+	 
+	 <!-- SQL : SELECT ONE -->
+	 <select 	id="getUser"	parameterType="map"	resultMap="userSelectMap">
+		SELECT
+		* 		
+		FROM users
+		<where>
+			<if test="login != null">
+				EMAIL = #{login} or PHONE = #{login}
+			</if>
+			<if test="email != null" >
+				NAME = #{findInfo} AND EMAIL = #{email}
+			</if>
+			<if test="phone != null" >
+				NAME = #{findInfo} AND PHONE = #{phone}
+			</if>
+			<if test="nickname != null" >
+				NICKNAME = #{nickname}
+			</if>
+			<if test="userCode != null" >
+				USER_CODE = #{userCode}
+			</if>
+			<if test="token != null" >
+				TOKEN = #{token}
+			</if>
+			<if test="nick != null">
+				NICKNAME LIKE &apos;%${nick}%&apos; 
+			</if>
+		</where> 
+	 </select>
+	 
+	 <select id="searchUser" parameterType="user" resultMap="userSelectMap">
+	 	SELECT * FROM users
+	 	WHERE NICKNAME LIKE &apos;%${nickname}%&apos; 
+	 
+	 </select>
+	 
+	 <select 	id="getCheckUser"	parameterType="string"	resultType="string">
+		SELECT
+		nickname 		
+		FROM users 
+		WHERE NICKNAME = #{value}
+	 </select>
+	 
+	 <update id="updateUser" parameterType="map">
+	 	UPDATE users
+	 	<set>
+	 	<if test="target == 'introduce'">
+	 	INTRODUCE = #{value}
+	 	</if>
+	 	<if test="target == 'session'">
+	 	SESSION_NO = #{value}
+	 	</if>
+	 	<if test="target == 'password'">
+	 	PASSWORD = #{value}
+	 	</if>
+	 	<if test="target == 'nickname'">
+	 	NICKNAME = #{value}
+	 	</if>
+	 	<if test="target == 'phone'">
+	 	PHONE = #{value}
+	 	</if>
+	 	<if test="target == 'email'">
+	 	EMAIL = #{value}
+	 	</if>
+	 	<if test="target == 'auth'">
+	 	PROFILE_AUTH = #{value}
+	 	</if>
+	 	<if test="target == 'img'">
+	 	PROFILE_IMG = #{value}
+	 	</if>
+	 	<if test="target == 'token'">
+	 	TOKEN = #{value}
+	 	</if>
+	 	<if test="target == 'block'">
+	 	START_BLOCK = #{start:VARCHAR},
+	 	END_BLOCK = #{end:VARCHAR}
+	 	<if test="start == null">
+	 	,role = 'user'
+	 	</if>
+	 	<if test="start != null">
+	 	,role = 'block'
+	 	</if>
+	 	</if>
+	 	</set>
+	 	WHERE USER_CODE = #{userCode}
+	 </update>
+	 
+	<select id="getUserList" parameterType="map" resultMap="userSelectMap">
+		SELECT USER_CODE , TOKEN , PROFILE_AUTH , ROLE , NICKNAME, EMAIL, PHONE, NAME , PASSWORD,BIRTH,GENDER,PROFILE_IMG,INTRODUCE,REG_DATE,NVL(START_BLOCK,'-') START_BLOCK ,NVL(END_BLOCK,'-') END_BLOCK 
+		from USERS
+		<if test="role != 'all'">
+			<where>
+				role = #{role}
+			</where>
+		</if>
+		order by ${order}
+	</select>
+	
+	
+	<select id="getPayList"	parameterType="int"	resultMap="payMap">
+		select * 
+		from paylist p, users u
+		where p.payment_user = u.user_code and payment_user = #{value}
+	 </select>
+	 
+	 <insert id="addPay" parameterType="pay">
+	 INSERT INTO paylist 
+	 <if test="hotelCode != null">
+	 (payment_code,payment_user,payment_date,payment_price,payment_option,hotel_name,hotel_address,start_date,end_date,hotel_code)
+	 </if>
+	 <if test="startWay != null">
+	 (payment_code,payment_user,payment_date,payment_price,payment_option,start_date,end_date,start_way,end_way,flight_time,return_flight_time)
+	 </if>
+	 VALUES 
+	 <if test="hotelCode != null">
+	 (seq_paylist_code.nextval,#{paymentUser.userCode},sysdate,#{paymentPrice},'카카오페이',#{hotelName},#{hotelAddress},#{startDate},#{endDate},#{hotelCode})
+	  </if>
+	  <if test="startWay != null">
+	 (seq_paylist_code.nextval,#{paymentUser.userCode},sysdate,#{paymentPrice},'카카오페이',#{startDate},#{endDate},#{startWay},#{endWay},#{flightTime},#{returnFlightTime})
+	 </if>
+	 </insert>
+	
+	
+	
+	<select id="getFriendList" parameterType="friend" resultMap="friendMap">
+		select f.*,u.user_code to_code,u.nickname to_nick,u.profile_Img to_img from friend f, users u
+		where f.friend_code = u.user_Code and f.user_code = #{userCode} and FRIEND_ROLE = #{friendRole}
+	</select>
+	
+	<insert id="inviteUser" parameterType="friend">
+		INSERT INTO friend (FRIEND_NO,USER_CODE,FRIEND_CODE,FRIEND_ROLE,MEMO) 
+		VALUES (seq_friend_code.nextval,#{userCode},#{friendCode.userCode},#{friendRole},' ')
+	</insert>
+	
+	
+	<update id="addFriendMemo" parameterType="friend">
+		UPDATE friend 
+		<set>
+			<if test="memo != null">
+				MEMO = #{memo:VARCHAR}
+			</if>
+		</set> 
+		WHERE FRIEND_NO = #{friendNo}
+	
+	
+	</update>
+	
+	<insert id="addPolice" parameterType="police">
+		INSERT INTO police
+		VALUES (seq_police_code.nextval,#{fromUser.userCode},#{toUser.userCode},#{policeBoardCode},#{policeDetailCode},#{policeOption},#{policeContent},#{policeDate},'X',#{commentCode:NUMERIC})
+	</insert>
+	
+	<select id="getPoliceList" resultMap="policeMap">
+	select  u1.*,u2.user_code to_code, u2.nickname to_nick,u2.role to_role from (
+	select * from police p , users u
+	where p.from_user = u.user_code) u1, users u2 where u1.to_user=u2.user_code
+	</select>
+	
+	<update id="updatePolice" parameterType="police">
+		UPDATE police set processing=#{processing} where police_code = #{policeCode}
+	</update>
+	
+	 
+</mapper>

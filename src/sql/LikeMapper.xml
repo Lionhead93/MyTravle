@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="LikeMapper">
+ 	
+ 	
+	<resultMap id="likemap" type="like">
+		<result property="likeCode" 				column="LIKE_CODE" 				jdbcType="NUMERIC"/>
+		<result property="boardCode"				column="BOARD_CODE" 				jdbcType="NUMERIC" />
+		<result property="detailCode" 				column="DETAIL_CODE" 				jdbcType="NUMERIC" />
+		<result property="commentCode" 			column="COMMENT_CODE" 			jdbcType="NUMERIC" />
+		<association property="likeName" javaType="user">
+			<result property="userCode" column="USER_CODE" />
+		</association>
+	</resultMap>
+	
+	<insert 	id="addLike"		parameterType="like" >
+		insert into likes(LIKE_CODE , BOARD_CODE, DETAIL_CODE, COMMENT_CODE, LIKE_NAME ) 
+		values (seq_like_code.nextval,#{boardCode:NUMERIC},#{detailCode:NUMERIC},#{commentCode:NUMERIC},#{likeName.userCode})			
+	 </insert>
+	 
+	 <delete id="deleteLike" parameterType="like">
+	 	DELETE FROM LIKES
+	 	WHERE 
+	 	<if test="boardCode != 0">
+	 		BOARD_CODE = #{boardCode} and DETAIL_CODE = #{detailCode} and LIKE_NAME = #{likeName.userCode}
+	 	</if>
+	 	<if test="commentCode != 0">
+	 		COMMENT_CODE = #{commentCode} and LIKE_NAME = #{likeName.userCode}
+	 	</if>
+	 </delete>
+	 
+	 <select id="checkLike" parameterType="map" resultType="int">
+	 SELECT count(*) 
+	 FROM LIKES 
+	 WHERE
+	 <if test="boardCode == null">
+	 COMMENT_CODE = #{commentCode} AND LIKE_NAME = #{likeName}
+	 </if> 
+	 <if test="boardCode != null">
+	 BOARD_CODE = #{boardCode} AND DETAIL_CODE = #{detailCode} AND LIKE_NAME = #{likeName}
+	 </if> 
+	 
+	 </select>
+	
+	<select id="countLike" parameterType="like" resultType="int">
+		SELECT count(*) 
+		FROM likes
+		WHERE BOARD_CODE = #{boardCode} and DETAIL_CODE = #{detailCode}
+	</select>
+	
+	
+	
+	 
+</mapper>

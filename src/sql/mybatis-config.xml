@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+							   "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<!-- mybatis-config.xml :: MyBatis Framework MetaData -->
+<configuration>
+
+	<!-- 기타 설정정보 :: [MyBatis_Home]/mybatis-3.2.1.pdf 참조 -->
+	<settings>
+		<setting name="callSettersOnNulls" value="false" />
+	</settings>	
+	
+	<!-- FQCN(Full Qualified Class Name) Alias(별칭관리) -->
+	<typeAliases>
+		<typeAlias alias="user" type="com.youlove.service.domain.User" />
+		<typeAlias alias="city" type="com.youlove.service.domain.City" />
+		<typeAlias alias="comment" type="com.youlove.service.domain.Comment" />
+		<typeAlias alias="like" type="com.youlove.service.domain.Like" />
+		<typeAlias alias="friend" type="com.youlove.service.domain.Friend" />
+		<typeAlias alias="pay" type="com.youlove.service.domain.Pay" />
+		<typeAlias alias="hotel" type="com.youlove.service.domain.Hotel" />
+		<typeAlias alias="timeline" type="com.youlove.service.domain.Timeline" />
+		<typeAlias alias="police" type="com.youlove.service.domain.Police" />
+		<typeAlias alias="wallet" type="com.youlove.service.domain.Wallet" />
+		<!-- 중현 -->
+		<typeAlias alias="community" type="com.youlove.service.domain.Community" />
+		<typeAlias alias="hashtag" type="com.youlove.service.domain.Hashtag" />
+		<typeAlias alias="party" type="com.youlove.service.domain.Party" />
+		<typeAlias alias="search" type="com.youlove.common.Search" />
+		 <!-- <typeAlias alias="message" type="com.youlove.service.domain.Message" /> --> 
+		
+			<typeAlias alias="planner" type="com.youlove.service.domain.Planner" /> 
+			<typeAlias alias="route" type="com.youlove.service.domain.Route" /> 
+			<typeAlias alias="schedule" type="com.youlove.service.domain.Schedule" />
+			<typeAlias alias="chatbot" type="com.youlove.service.domain.Chatbot" />
+	</typeAliases>
+	
+	<!-- SQL Definition :: file include -->
+	<mappers>
+		<mapper resource="sql/UserMapper.xml"/>
+		<mapper resource="sql/GuideMapper.xml"/>
+		<mapper resource="sql/CommentMapper.xml"/>
+		<mapper resource="sql/LikeMapper.xml"/>
+		<mapper resource="sql/TimelineMapper.xml"/>
+		<mapper resource="sql/WalletMapper.xml"/>
+		<!-- 중현 -->
+		<mapper resource="sql/CommunityMapper.xml"/>
+		<mapper resource="sql/HashtagMapper.xml"/>
+		<mapper resource="sql/PartyMapper.xml"/>
+<!-- 		 <mapper resource="sql/MessageMapper.xml"/> -->
+		 
+		 
+		 <mapper resource="sql/PlannerMapper.xml"/>
+		 <mapper resource="sql/ChatbotMapper.xml"/> 
+		
+		
+	</mappers>
+
+</configuration>

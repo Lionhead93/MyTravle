@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="GuideMapper">
+ 	
+ 	
+	<resultMap id="cityMap" type="city">
+			<result property="cityName" 			column="CITY_NAME" 			jdbcType="VARCHAR"/>
+			<result property="countryCode"			column="COUNTRY_CODE" 		jdbcType="VARCHAR" />
+			<result property="lat" 					column="LAT" 				/>
+			<result property="lng" 					column="LNG" 				/>
+			<result property="countryName" 			column="COUNTRY_NAME" 		jdbcType="VARCHAR" />
+			<result property="flagImage" 			column="FLAG_IMAGE" 		jdbcType="VARCHAR" />
+			<result property="payUnit" 				column="PAY_UNIT" 			jdbcType="VARCHAR" />
+		</resultMap>
+	
+	<select 	id="getCity"	parameterType="city"	resultMap="cityMap">
+		SELECT
+			*
+			FROM city 
+		<if test="cityName != null">
+			WHERE CITY_NAME = #{cityName}
+		</if>
+		<if test="countryName != null">
+			WHERE COUNTRY_NAME = #{countryName}
+		</if>
+	 </select>
+	 
+	 <select id="getCityList" parameterType="string" resultMap="cityMap">
+	 	SELECT
+	 	<if test="_parameter.equals('all')" >
+	 	*
+	 	</if>
+	 	<if test="_parameter.equals('country')">
+	 	DISTINCT country_name,flag_image,pay_unit,country_code
+	 	</if>
+	 	<if test="_parameter != 'all' and _parameter != 'country'">
+	 	*
+	 	</if>
+	 	
+	 	FROM city
+	 	<if test="_parameter != 'all' and _parameter != 'country'">
+	 	WHERE COUNTRY_NAME = #{value}
+	 	</if>
+	 </select>
+	 
+	
+	 
+</mapper>

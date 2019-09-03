@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="PlannerMapper">
+ 	
+	<resultMap id="plannerSelectMap" type="planner">
+		<result property="plannerCode" 			column="PLANNER_CODE" 			jdbcType="NUMERIC"/>
+		<result property="plannerVer" 			column="planner_ver" 			jdbcType="NUMERIC"/>
+		<result property="plannerName"				column="PLANNER_NAME" 				jdbcType="VARCHAR" />
+		<result property="departDate" 			column="DEPART_DATE" 		jdbcType="VARCHAR" />
+		<result property="plannerImage" 				column="PLANNER_IMAGE" 				jdbcType="VARCHAR" />
+
+		<result property="member" 				column="MEMBER" 				jdbcType="CHAR" />
+		<result property="privacy" 				column="PRIVACY" 				jdbcType="CHAR" />
+		<result property="status" 				column="STATUS" 				jdbcType="CHAR"  />
+		<result property="isGroup" 			column="ISGROUP" 			jdbcType="CHAR" />
+		<result property="boardCode" 				column="BOARD_CODE" 				jdbcType="CHAR" />
+		<result property="regDate" 				column="REG_DATE" 			jdbcType="DATE" />
+		<association property="plannerWriter"  column ="planner_writter" javaType="user"> 
+			<result property="userCode" column="USER_CODE" />
+			<result property="nickname" column="NICKNAME" />
+			<result property="profileImg" column="PROFILE_IMG" />
+			</association>
+	</resultMap>
+	
+	<resultMap id="routeSelectMap" type="route">
+		<result property="routeCode" 			column="route_code" 			jdbcType="NUMERIC"/>
+		<result property="plannerCode" 			column="PLANNER_CODE" 			jdbcType="NUMERIC"/> 
+		<result property="plannerVer" 			column="planner_ver" 			jdbcType="NUMERIC"/>
+		<result property="cityName" 			column="city_name" 			jdbcType="VARCHAR"/>
+		<result property="cityOrder"	column="city_order" 		jdbcType="NUMERIC" />
+		<result property="stayDay" 			column="stay_day" 		jdbcType="NUMERIC" />
+		<result property="lat" 			column="lat" 		jdbcType="VARCHAR" />
+		<result property="lng" 			column="lng" 		jdbcType="VARCHAR" />
+		<result property="startDate" 			column="START_DATE" 		jdbcType="DATE"  />
+		<result property="endDate" 			column="END_DATE" 		jdbcType="DATE" />
+		
+<!-- 		<association property="planner" 			column="planner_code" 		select="PlannerMapper.getPlanner" javaType="planner"/> -->
+		</resultMap>
+		
+		 <resultMap id="scheduleSelectMap" type="schedule">
+		<result property="scheCode"				column="SCHE_CODE" 				jdbcType="NUMERIC" />
+		<result property="plannerCode" 			column="PLANNER_CODE" 			jdbcType="NUMERIC"/> 
+		<result property="plannerVer" 			column="planner_ver" 			jdbcType="NUMERIC"/>
+		<result property="scheDay"				column="SCHE_DAY" 				jdbcType="VARCHAR" />
+		<result property="timeHour"				column="TIME_HOUR" 				jdbcType="VARCHAR" />
+		<result property="timeMin"				column="TIME_MIN" 				jdbcType="VARCHAR" />
+		<result property="etimeHour"				column="ETIME_HOUR" 				jdbcType="VARCHAR" />
+		<result property="etimeMin"				column="ETIME_MIN" 				jdbcType="VARCHAR" />
+		
+		<result property="scheName"				column="SCHE_NAME" 				jdbcType="VARCHAR" />
+		<result property="schePlace"				column="SCHE_PLACE" 				jdbcType="VARCHAR" />
+		<result property="scheDetail" 			column="SCHE_DETAIL" 			jdbcType="VARCHAR"/>	
+		<result property="accomodation" 			column="ACCOMODATION" 			jdbcType="VARCHAR"/>	
+		<result property="color" 			column="COLOR " 			jdbcType="VARCHAR"/>	
+		
+
+	<!-- <association property="PLANNER" column="PLANNER_CODE"  select="PlannerMapper.getPlanner" javaType="planner"/>
+	<association property="ROUTE" column="ROUTE_CODE"  select="PlannerMapper.getRoute" javaType="route"/> -->
+	</resultMap> 
+	
+	 	<!-- 1. planner -->
+	 	
+	 <insert 	id="addPlanner"		parameterType="planner" >
+		<selectKey keyProperty="plannerCode" resultType="int" order="BEFORE">
+		 SELECT seq_planner_code.nextval FROM dual
+		</selectKey>
+	 	INSERT
+		INTO planner(PLANNER_CODE , planner_ver, planner_writer, PLANNER_NAME , PLANNER_IMAGE, MEMBER,  STATUS, ISGROUP , BOARD_CODE, DEPART_DATE , REG_DATE ) 
+		VALUES	 (#{plannerCode}, 1, #{plannerWriter.userCode}, #{plannerName:VARCHAR} , #{plannerImage:VARCHAR}, #{member},  'B',  'N' , '4', #{departDate:VARCHAR}, SYSDATE)
+	
+
+	 </insert>
+	 
+	
+	 <select 	id="getPlanner"	parameterType="string"	resultMap="plannerSelectMap">
+		SELECT
+		p.planner_code, p.planner_ver, p.planner_name, p.planner_image, p.DEPART_DATE, p.planner_writer, p.member,  p.reg_Date, p.board_code, u.user_code, u.profile_img,u.nickname
+		FROM  planner p, users u 
+		WHERE p.planner_code =#{value} 
+		AND p.planner_writer =u.user_code 
+	 </select>
+	 
+	  <update	id="updatePlanner"	parameterType="planner" >
+	   	UPDATE planner
+	   	<set>
+	   		planner_ver = planner_ver+1,
+	   		planner_name 	= #{plannerName} ,
+			planner_image	= #{plannerImage},
+			DEPART_DATE = #{departDate} ,
+			member	=	#{member}
+			
+	   	</set>
+	   	WHERE planner_code = #{plannerCode}
+	 </update>
+		 
+		
+		<delete id="deletePlanner" parameterType="int">
+		DELETE planner 
+		WHERE planner_code = #{plannerCode}
+		</delete>
+		
+	 	<select  id="getPlannerList"  parameterType="map"	resultMap="plannerSelectMap">
+SELECT *
+	  	FROM (	SELECT inner_table.* , ROWNUM AS row_seq
+	  					FROM		(
+	  					SELECT  planner_code, planner_name, planner_image, DEPART_DATE, member
+	  					FROM planner
+	  				
+										 where	planner_writer = #{userCode}
+								
+	  					 ORDER BY planner_code DESC 
+	  						) inner_table
+						WHERE ROWNUM &lt;= #{search.endRowNum} )
+		WHERE row_seq BETWEEN #{search.startRowNum} AND #{search.endRowNum} 
+			  	 
+	</select>
+	
+<select  id="getBestPlannerList"  parameterType="map"	resultMap="plannerSelectMap">
+SELECT *
+			FROM planner p, (select count(*) orderCount ,detail_code
+				from likes
+					where board_code = 4
+					group by detail_code) lik
+				where p.planner_code = lik.detail_code
+				order by orderCount desc
+	</select>
+	 		
+	 <select  id="getAllPlannerList"  parameterType="map"	resultMap="plannerSelectMap">
+SELECT *
+	  	FROM (	SELECT inner_table.* , ROWNUM AS row_seq
+	  					FROM		(
+	  					<choose>
+	  					<!-- 검색어가 없는 경우 route 테이블 조인 no  -->
+	  					<when test="search.searchKeyword == null or search.searchKeyword ==''">
+	 					SELECT  p.planner_Name, p.planner_code, p.planner_image, p.DEPART_DATE, p.member,u.profile_img,u.nickname
+	  					FROM planner p, users u 
+	  					</when>
+	  					<!-- 검색어가 있는  경우 route 테이블 조인  -->
+	  					<when test="search.searchKeyword != null or search.searchKeyword !=''">
+	 					SELECT  p.planner_Name, p.planner_code, p.planner_image, p.DEPART_DATE, p.member, u.profile_img,u.nickname, r.city_name
+	  					FROM planner p, users u	, route r 
+	  					</when>
+	  					</choose>
+	  					
+	  					<where>
+	  					<!--  아래는 필수 !! -->
+	  					p.planner_writer =u.user_code
+	  					
+	  					<choose>
+	  					<!-- 검색어가 없는 경우  + 검색조건  -->
+	  					<when test="search.searchKeyword == null or search.searchKeyword ==''">
+	  					<if test= "search.searchCondition!= null  and  search.searchCondition != 0 ">		
+	  					AND p.member =#{search.searchCondition} 
+	  					</if>
+	  					<if test= "search.searchCondition2!= null  and  search.searchCondition2 != 0 and
+	  					  search.searchCondition2 >=10 ">
+	  					AND SUBSTR(p.depart_date ,5,2) =#{search.searchCondition2} 
+	  					</if>
+	  					<if test= "search.searchCondition2!= null  and  search.searchCondition2 != 0 and
+	  					 9>=search.searchCondition2  ">
+	  					AND SUBSTR(p.depart_date ,6,1)=#{search.searchCondition2} 
+	  					</if>
+	  			       </when>
+	  					
+	  					<!-- 검색어가 있는 경우 + 검색조건  -->
+	  					<when test="search.searchKeyword != null or search.searchKeyword !=''" >
+	  					AND p.planner_code= r.planner_code	
+	  					AND r.city_name =#{search.searchKeyword} 
+	  					<if test ="search.searchCondition!= null  and  search.searchCondition != 0 ">
+	  					AND p.member =#{search.searchCondition}  
+	  					</if>
+	  					<if test= "search.searchCondition2!= null  and  search.searchCondition2 != 0 and
+	  					  search.searchCondition2 >=10 ">
+	  					AND SUBSTR(p.depart_date ,5,2) =#{search.searchCondition2} 
+	  					</if>
+	  					<if test= "search.searchCondition2!= null  and  search.searchCondition2 != 0 and
+	  					 9>=search.searchCondition2  ">
+	  					AND SUBSTR(p.depart_date ,6,1)=#{search.searchCondition2} 
+	  					</if>
+	  					</when>
+	  					</choose>
+	  					 </where>
+	  					 ORDER BY p.planner_code DESC 
+	  						) inner_table
+						WHERE ROWNUM &lt;= #{search.endRowNum} )
+		WHERE row_seq BETWEEN #{search.startRowNum} AND #{search.endRowNum} 
+			  	 
+	</select>
+	
+	
+	<select  id="getTotalCount" parameterType="map" resultType="int">
+	  	SELECT COUNT(*)
+	  	FROM(	SELECT planner_code, planner_name, planner_image, DEPART_DATE, member
+	  				FROM planner
+						where	planner_writer = #{userCode}
+	  					order by planner_code DESC
+	  				) countTable						
+	 </select>
+	 
+	<select  id="getAllTotalCount" parameterType="map" resultType="int">
+	  SELECT COUNT(*)
+	  	FROM (	<choose>
+	  					<!-- 검색어가 없는 경우 route 테이블 조인 no  -->
+	  					<when test="search.searchKeyword == null or search.searchKeyword ==''">
+	 					SELECT  p.planner_Name, p.planner_code, p.planner_image, p.DEPART_DATE, p.member,  u.profile_img,u.nickname
+	  					FROM planner p, users u 
+	  					</when>
+	  					<!-- 검색어가 있는  경우 route 테이블 조인  -->
+	  					<when test="search.searchKeyword != null or search.searchKeyword !=''">
+	 					SELECT  p.planner_Name, p.planner_code, p.planner_image, p.DEPART_DATE, p.member, u.profile_img,u.nickname, r.city_name
+	  					FROM planner p, users u	, route r 
+	  					</when>
+	  					</choose>
+	  					
+	  					<where>
+	  					<!--  아래는 필수 !! -->
+	  					p.planner_writer =u.user_code
+	  					
+	  					<choose>
+	  					<!-- 검색어가 없는 경우  + 검색조건  -->
+	  					<when test="search.searchKeyword == null or search.searchKeyword ==''">
+	  					<if test= "search.searchCondition!= null  and  search.searchCondition != 0 ">		
+	  					AND p.member =#{search.searchCondition} 
+	  					</if>
+	  					<if test= "search.searchCondition2!= null  and  search.searchCondition2 != 0 and
+	  					  search.searchCondition2 >=10 ">
+	  					AND SUBSTR(p.depart_date ,5,2) =#{search.searchCondition2} 
+	  					</if>
+	  					<if test= "search.searchCondition2!= null  and  search.searchCondition2 != 0 and
+	  					 9>=search.searchCondition2  ">
+	  					AND SUBSTR(p.depart_date ,6,1)=#{search.searchCondition2} 
+	  					</if>
+	  			       </when>
+	  					
+	  					<!-- 검색어가 있는 경우 + 검색조건  -->
+	  					<when test="search.searchKeyword != null or search.searchKeyword !=''" >
+	  					AND p.planner_code= r.planner_code	
+	  					AND r.city_name =#{search.searchKeyword} 
+	  					<if test ="search.searchCondition!= null  and  search.searchCondition != 0 ">
+	  					AND p.member =#{search.searchCondition}  
+	  					</if>
+	  					<if test= "search.searchCondition2!= null  and  search.searchCondition2 != 0 and
+	  					  search.searchCondition2 >=10 ">
+	  					AND SUBSTR(p.depart_date ,5,2) =#{search.searchCondition2} 
+	  					</if>
+	  					<if test= "search.searchCondition2!= null  and  search.searchCondition2 != 0 and
+	  					 9>=search.searchCondition2  ">
+	  					AND SUBSTR(p.depart_date ,6,1)=#{search.searchCondition2} 
+	  					</if>
+	  					</when>
+	  					</choose>
+	  					 </where>
+	  					 ORDER BY planner_code DESC 
+	  						) countTable 	 <!-- 
+			  	 SELECT COUNT(*)
+		FROM planner  -->
+	</select>
+	 		
+		
+		<!-- 2. route /////////////////////////////////////////////////// -->
+	 	
+	<insert 	id="addRoute"		parameterType="route" >
+
+	 	INSERT
+		INTO route (route_code, planner_ver, planner_code, city_name ,stay_day, city_order,  lat, lng, start_date, end_date) 
+		VALUES	 (seq_route_code.nextval, #{plannerVer:INTEGER}, #{plannerCode:INTEGER}, #{cityName:VARCHAR} ,#{stayDay:INTEGER}, #{cityOrder:INTEGER} , #{lat:VARCHAR}, #{lng:VARCHAR},#{startDate:DATE}, #{endDate:DATE})
+	 </insert>
+	
+		 <select 	id="getRoute"	parameterType="string"	resultMap="routeSelectMap">
+		SELECT
+		city_name ,stay_day, city_order,  lat, lng 
+		FROM route
+		WHERE planner_code = #{plannerCode}
+	 </select>
+	 
+	 		
+		<delete id="deleteRoute" parameterType="int">
+		DELETE Route 
+		WHERE planner_code = #{plannerCode}
+		</delete>
+	 
+	 <select  id="getRouteList"  parameterType="hashmap"	resultMap="routeSelectMap">
+
+	  	SELECT
+		city_name ,city_order, stay_day, start_Date,end_Date, lat, lng 
+	  	FROM route 
+	  	<where>
+	  	planner_code = #{plannerCode}  and
+	  	planner_ver=(SELECT MAX(planner_ver) FROM route where planner_code = #{plannerCode})  
+		</where>
+	  </select>			
+	  				
+	   <select 	id="getRouteCityName"	resultMap="routeSelectMap">
+		SELECT city_name
+		FROM  route 
+		<where>
+	  	planner_code = #{plannerCode}  and
+	  	planner_ver=(SELECT MAX(planner_ver) FROM route where planner_code = #{plannerCode})   
+
+		</where>
+	 </select>
+	 
+	  	 <select 	id="getRouteLat"	resultMap="routeSelectMap">
+		SELECT lat
+		FROM  route 
+		<where>
+	  	planner_code = #{plannerCode}   and
+	  	planner_ver=(SELECT MAX(planner_ver) FROM route where planner_code = #{plannerCode})  
+		</where>
+	 </select>
+	 
+	  	 <select 	id="getRouteLng" 	resultMap="routeSelectMap">
+		SELECT lng
+		FROM  route 
+		<where>
+	  	planner_code = #{plannerCode}   and
+	  	planner_ver=(SELECT MAX(planner_ver) FROM route where planner_code = #{plannerCode})   
+		</where>
+	 </select>			
+	
+	 <!-- 3. schedule /////////////////////////////////////////////////// -->
+	 
+		<insert 	id="addSchedule"		parameterType="schedule" >
+	 	INSERT
+		INTO schedule (sche_code, planner_ver, planner_code, sche_day, time_hour,  time_min,  sche_name, sche_place, sche_detail,accomodation, color ) 
+		VALUES	 (seq_schedule_code.nextval, 1, #{plannerCode}, #{scheDay:VARCHAR} ,#{timeHour:VARCHAR}, #{timeMin:VARCHAR}, #{scheName:VARCHAR}, #{schePlace:VARCHAR}, #{scheDetail:VARCHAR},null,#{color:VARCHAR})
+	 </insert>
+	
+		<select 	id="getSchedule"	parameterType="string"	resultMap="scheduleSelectMap">
+		SELECT
+		sche_code,planner_ver, planner_code, sche_day, time_hour,  time_min,  sche_name, sche_place, sche_detail,color
+		FROM schedule
+		WHERE sche_code = #{scheCode}
+	 </select>
+	
+		 <update	id="updateSchedule"	parameterType="schedule" >
+	 	UPDATE schedule 
+	 	<set>
+	 	SCHE_Day	= #{scheDay}
+		</set>
+		WHERE sche_code = #{scheCode}
+	 </update>
+	 
+	 		 <update	id="updateSchedule2"	parameterType="schedule" >
+	 	UPDATE schedule 
+	 	<set>
+	 		SCHE_NAME = #{scheName},
+	 		SCHE_PLACE = #{schePlace},
+	 		SCHE_DETAIL = #{scheDetail},
+			TIME_HOUR = #{timeHour},
+			TIME_MIN = #{timeMin},
+			COLOR= #{color}
+		</set>
+		WHERE sche_code = #{scheCode}
+	 </update>
+	 
+
+		<delete id="deleteSchedule" parameterType="int">
+		DELETE  schedule
+		WHERE sche_code = #{scheCode}
+		</delete>
+		
+		<delete id="deleteAllSchedule" parameterType="int">
+		DELETE  schedule
+		WHERE planner_code = #{plannerCode}
+		</delete>
+		
+  	<select  id="getScheduleList"  parameterType="hashmap"	resultMap="scheduleSelectMap">
+
+	  	SELECT
+		sche_code, sche_day, sche_name, color, time_hour, time_min
+	  	FROM schedule
+	  	<where>
+	  	planner_code = #{plannerCode}  and
+	  	planner_ver=(SELECT MAX(planner_ver) FROM schedule where planner_code = #{plannerCode})    
+		</where>
+			</select>
+			
+			
+</mapper>

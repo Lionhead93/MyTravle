@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CommunityMapper">
+ 	
+	<resultMap id="communityMap" type="community">
+		<result property="communityCode" 		column="community_code" 		jdbcType="NUMERIC"/>
+		<result property="communityBoard"		column="community_board" 		jdbcType="CHAR" />
+		<result property="communityTitle" 		column="community_title" 		jdbcType="VARCHAR" />
+		<result property="communityContent" 	column="community_content" 		jdbcType="VARCHAR" />
+		<result property="communityDate" 		column="community_date" 		jdbcType="VARCHAR" />
+		<result property="communityThumbnail" 	column="community_thumbnail" 	jdbcType="VARCHAR" />
+		<result property="openRange" 			column="open_range" 			jdbcType="CHAR" />
+		<result property="views" 				column="views" 					jdbcType="NUMERIC"  />
+		<result property="communityHashtagCode.hashtagCode" column="hashtag_code" 	jdbcType="NUMERIC" />
+		<result property="city.cityName" 					column="city_name" 		jdbcType="VARCHAR" />
+		<association property="writer" javaType="user" >
+			<result property="userCode" 	column="USER_CODE" />
+			<result property="nickname" 	column="NICKNAME" />
+			<result property="profileImg"	column="PROFILE_IMG" />
+		</association>
+		<association property="city" javaType="city" >
+			<result property="cityName" 	column="CITY_NAME" 	 />
+			<result property="countryName" 	column="COUNTRY_NAME"/>
+			<result property="flagImage" 	column="FLAG_IMAGE"/>
+		</association>
+	</resultMap>
+	
+	<insert id="addCommunity" parameterType="community">
+		<selectKey keyProperty="communityCode" resultType="int" order="BEFORE">
+		     SELECT MAX(community_code)+1 FROM community
+		</selectKey>
+		INSERT
+		INTO community (community_code, community_board, community_title, community_content, community_date,community_thumbnail,
+						open_range, views, writer, hashtag_code, city_name)
+		VALUES (seq_community_code.nextval,#{communityBoard},#{communityTitle},<![CDATA[#{communityContent}]]>,to_char(sysdate,'yy.mm.dd hh24:mi'),
+				#{communityThumbnail:VARCHAR},#{openRange},#{views},#{writer.userCode},#{communityHashtagCode.hashtagCode:NUMERIC},#{city.cityName:VARCHAR})
+	</insert>
+	 
+	<select 	id="getCommunity"		parameterType="int"		resultMap="communityMap">
+		SELECT
+		community_code, community_board, community_title, community_content, community_date, community_thumbnail, open_range, views, writer, hashtag_code, city_name,
+		u.user_code, u.nickname, u.profile_img
+		FROM community c,users u
+		WHERE community_code = #{communityCode} AND u.user_code = c.writer
+	</select>
+	
+	<select  	id="getCommunityRelated"  	parameterType="map"	resultMap="communityMap">
+		SELECT *
+		FROM (SELECT first_table.*, ROWNUM AS row_seq
+		        FROM ( SELECT community_code, community_board, community_title, community_content, community_date,
+		                                community_thumbnail, open_range, views, writer, city_name
+		                FROM community
+		                WHERE community_board = #{communityBoard}
+			                <if test="communityBoard == 2">
+			                	AND city_name = #{city}
+			                </if>
+		                ORDER BY views DESC ) first_table
+		        WHERE ROWNUM  &lt;= 4 )
+		WHERE  row_seq BETWEEN 0 AND 4
+	
+	</select>
+	
+	<update 	id="countCommunity" 	parameterType="community">
+		UPDATE community
+		<set>
+			views = #{views}+1
+		</set>
+		WHERE community_code = #{communityCode}
+	</update> 
+
+	<update		id="updateCommunity"	parameterType="community" >
+		UPDATE community
+		<set>
+		    community_board 	= #{communityBoard},
+			community_title		= #{communityTitle},
+			community_content	= <![CDATA[#{communityContent}]]>,
+			community_thumbnail	= #{communityThumbnail:VARCHAR},
+			open_range			= #{openRange},
+			city_name           = #{city.cityName:VARCHAR}
+		</set>
+		WHERE community_code = #{communityCode}
+	</update>
+		 
+	<select  	id="getCommunityList"  	parameterType="map"	resultMap="communityMap">
+		SELECT *
+		FROM (SELECT first_table.*, ROWNUM AS row_seq
+		            FROM ( SELECT c.community_code, c.community_board, c.community_title, c.community_content, c.community_date, c.community_thumbnail,
+		            				c.open_range, c.views, c.writer, c.hashtag_code, c.city_name, u.user_code, u.nickname,u.profile_img, l.country_name, l.flag_Image
+	                       FROM community c, users u, city l
+                       	 	<where>
+                       	 		c.writer = u.user_Code AND l.city_name(+) = c.city_name
+		                        <if test="communityBoard != 0">
+		                       		<if test="communityBoard == 1">
+		                       			AND	community_board = 1
+		                       		</if>
+		                       		<if test="communityBoard == 2">
+		                       			AND	community_board = 2
+		                       		</if>
+		                       		<if test="communityBoard == 3">
+		                       			AND	community_board = 3
+		                       		</if>
+		                        </if>
+	                       		<if test="searchCondition != null or searchKeyword != null">
+	                        		<if test="searchCondition == 0 and searchKeyword !='' ">
+				                        AND	c.city_name LIKE &apos;%${searchKeyword}%&apos;
+	                        		</if>
+	                        		<if test="searchCondition == 1 and searchKeyword !='' ">
+				                        AND	c.community_title LIKE &apos;%${searchKeyword}%&apos;
+	                        		</if>
+	                        		<if test="searchCondition == 2 and searchKeyword !='' ">
+				                        AND	c.community_content LIKE &apos;%${searchKeyword}%&apos;
+	                        		</if>
+	                        		<if test="searchCondition == 3 and searchKeyword !='' ">
+				                        AND	c.hashtag_code LIKE &apos;#%${searchKeyword}%&apos;
+	                        		</if>
+	                        		<if test="searchCondition == 4 and searchKeyword !='' ">
+				                        AND	c.writer LIKE &apos;%${searchKeyword}%&apos;
+	                        		</if>
+		                       	</if>
+                        	</where>
+	                        ORDER BY c.community_code DESC ) first_table
+		            WHERE ROWNUM &lt;= #{endRowNum} )
+		WHERE row_seq BETWEEN #{startRowNum} AND #{endRowNum}
+	</select>
+	<select  	id="getCommunityBestList"  	parameterType="map"	resultMap="communityMap">
+		SELECT *
+			FROM (SELECT first_table.*, ROWNUM AS row_seq
+		            FROM ( SELECT community_code, community_board, community_title, community_content, community_date,
+		                                    community_thumbnail, open_range, views, u.nickname, city_name
+	                        FROM community c, users u
+	                        WHERE c.writer = u.user_code
+	                        ORDER BY views DESC ) first_table
+		            WHERE ROWNUM  &lt;= 6 )
+<!-- 			WHERE  row_seq BETWEEN 0 AND 10 -->
+			
+	</select>
+	<delete 	id="deleteCommunity" 	parameterType="int">
+		DELETE
+		FROM community
+		WHERE community_code = #{communityCode}
+	</delete>
+	
+	<select  id="getTotalCount"  parameterType="search" resultType="int">
+		SELECT COUNT(*)
+		FROM community
+	</select>
+	
+</mapper>
