@@ -1,6 +1,7 @@
 # MyTravle 
 Provide tourism information services to customers   
-![Alt text](/MyTravle.PNG "Optional title")
+![Alt text](/tra1.PNG "Optional title")  
+![Alt text](/tra2.PNG "Optional title")
 ## Stacks
 ### Client 
 frontend technologies used in this project:
